@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.muhandriansyah223280019.ui.screen.MainScreen
 import com.example.muhandriansyah223280019.ui.screen.ProfileScreen
 import com.example.muhandriansyah223280019.ui.theme.MuhAndriansyah223280019Theme
 
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(paddingValues = innerPadding)
                     ){
-                        ProfileScreen()
+                        MainScreen()
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package com.example.muhandriansyah223280019.ui.screen
 
+import android.net.http.HttpEngine
+import android.net.http.HttpException
 import android.widget.Toast
 import android.widget.Toast.makeText
 import androidx.compose.foundation.background
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,17 +52,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.muhandriansyah223280019.data.APIClient
+import com.example.muhandriansyah223280019.data.MahasiswaRequest
 import com.example.muhandriansyah223280019.ui.theme.MuhAndriansyah223280019Theme
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FromRegistrasiScreen() {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    val scope = rememberCoroutineScope ()
     var nim by remember { mutableStateOf("") }
     var nama by remember { mutableStateOf("") }
     var kelas by remember { mutableStateOf("") }
     var prodi by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(value = false)}
     var expanded by remember { mutableStateOf(false) }
 
     val opsiKelas = listOf("Kelas A", "Kelas B", "Kelas C", "Kelas D", "Kelas E")
@@ -255,7 +264,33 @@ fun FromRegistrasiScreen() {
                         Button(
                             onClick = {
                                 if (nim.isNotBlank() && nama.isNotBlank() && kelas.isNotBlank() && prodi.isNotBlank()){
-                                    Toast.makeText(context, "Data $nim berhasil disimpan.", Toast.LENGTH_SHORT).show()
+                                    scope.launch {
+                                        isLoading = true
+                                        try {
+                                            val request = MahasiswaRequest(nim, nama ,kelas ,prodi)
+                                            val response = APIClient.instace.SimpanDataMahasiswa(
+                                                mahasiswaRequest = request
+                                            )
+                                            if (response.status){
+                                                Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }catch (e: retrofit2.HttpException){
+                                            val errorBody = e.response()?.errorBody()?.string()
+                                            val errorMessage = try {
+                                                val jsonObject = JSONObject(errorBody ?: "")
+                                                jsonObject.getString("message")
+                                            }catch (_: Exception){
+                                                "Terjadi kesalahan pada server"
+                                            }
+                                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                                        } catch (e: Exception)
+                                        {
+                                            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+                                        }finally {
+                                            isLoading = false
+                                        }
+                                    }
+
                                 } else {
                                     Toast.makeText(context, "Lengkapi semua kolom", Toast.LENGTH_SHORT).show()
                                 }
