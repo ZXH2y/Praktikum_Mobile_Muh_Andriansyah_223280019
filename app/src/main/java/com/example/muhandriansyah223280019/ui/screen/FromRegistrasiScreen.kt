@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -70,6 +72,8 @@ fun FromRegistrasiScreen() {
     var prodi by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(value = false)}
     var expanded by remember { mutableStateOf(false) }
+    var expandedKelas by remember { mutableStateOf(false) }
+    var expandedProdi by remember { mutableStateOf(false) }
 
     val opsiKelas = listOf("Kelas A", "Kelas B", "Kelas C", "Kelas D", "Kelas E")
     val opsiProdi = listOf(
@@ -192,8 +196,8 @@ fun FromRegistrasiScreen() {
                         )
 
                         ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = it },
+                            expanded = expandedKelas,
+                            onExpandedChange = { expandedKelas = it },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             OutlinedTextField(
@@ -203,21 +207,21 @@ fun FromRegistrasiScreen() {
                                 label = { Text("Kelas") },
                                 placeholder = { Text("Pilih Kelas") },
                                 leadingIcon = { Icon(Icons.Default.Class, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKelas) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp)
                             )
 
                             ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
+                                expanded = expandedKelas,
+                                onDismissRequest = { expandedKelas = false }
                             ) {
                                 opsiKelas.forEach { selectionOptions ->
                                     DropdownMenuItem(
                                         text = { Text(selectionOptions) },
                                         onClick = {
                                             kelas = selectionOptions
-                                            expanded = false
+                                            expandedKelas = false
                                         },
                                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                     )
@@ -226,7 +230,7 @@ fun FromRegistrasiScreen() {
                         }
 
                         ExposedDropdownMenuBox(
-                            expanded = expanded,
+                            expanded = expandedProdi,
                             onExpandedChange = { expanded = it },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -273,6 +277,10 @@ fun FromRegistrasiScreen() {
                                             )
                                             if (response.status){
                                                 Toast.makeText(context, response.message, Toast.LENGTH_SHORT).show()
+                                                nim = ""
+                                                nama = ""
+                                                kelas = ""
+                                                prodi = ""
                                             }
                                         }catch (e: retrofit2.HttpException){
                                             val errorBody = e.response()?.errorBody()?.string()
@@ -295,18 +303,27 @@ fun FromRegistrasiScreen() {
                                     Toast.makeText(context, "Lengkapi semua kolom", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            enabled = !isLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
                             shape = RoundedCornerShape(16.dp),
                             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                         ) {
-                            Icon(Icons.Default.Save, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Simpan Data",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
                                 )
-                            )
+                            } else {
+                                Icon(Icons.Default.Save, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Simpan Data",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
                         }
                     }
                 }
