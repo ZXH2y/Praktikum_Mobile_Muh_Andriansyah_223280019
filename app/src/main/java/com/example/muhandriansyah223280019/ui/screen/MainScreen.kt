@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Class
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.SupervisedUserCircle
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -69,6 +70,7 @@ sealed class Screen(val title: String, val icon: ImageVector) {
         title = "Form Registrasi",
         icon = Icons.Default.Class
     )
+    object DaftarMahasiswa : Screen("Daftar Mahasiswa", Icons.Default.SupervisedUserCircle)
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +79,7 @@ fun MainScreen() {
     val items = listOf(
         Screen.Profile,
         Screen.FromRegistrasi,
+        Screen.DaftarMahasiswa
     )
 
     val pageState = rememberPagerState(pageCount = {
@@ -203,7 +206,14 @@ fun MainScreen() {
             Box(modifier = Modifier.fillMaxSize()) {
                 when (items[page]) {
                     is Screen.Profile -> ProfileScreen()
-                    is Screen.FromRegistrasi -> FromRegistrasiScreen()
+                    is Screen.FromRegistrasi -> FromRegistrasiScreen(
+                        onSuccess = {
+                            coroutineScope.launch {
+                                pageState.animateScrollToPage(2)
+                            }
+                        }
+                    )
+                    is Screen.DaftarMahasiswa -> DaftarMahasiswaScreen()
                 }
             }
 

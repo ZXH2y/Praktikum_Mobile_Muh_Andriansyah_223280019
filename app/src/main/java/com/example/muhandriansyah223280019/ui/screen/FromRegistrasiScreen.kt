@@ -62,7 +62,7 @@ import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FromRegistrasiScreen() {
+fun FromRegistrasiScreen(onSuccess: () -> Unit = {}) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope ()
@@ -281,6 +281,7 @@ fun FromRegistrasiScreen() {
                                                 nama = ""
                                                 kelas = ""
                                                 prodi = ""
+                                                onSuccess()
                                             }
                                         }catch (e: retrofit2.HttpException){
                                             val errorBody = e.response()?.errorBody()?.string()

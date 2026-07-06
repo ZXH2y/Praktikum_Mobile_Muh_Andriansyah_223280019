@@ -6,7 +6,7 @@ import retrofit2.create
 
 object APIClient
 {
-    private const val BASE_URL = "http://10.37.84.68:8000/mobile_connection/"
+    private const val BASE_URL = "http://10.37.84.246/program/html/android_backend/"
 
     val instace: APIServices by lazy {
         val retrofit = Retrofit.Builder()
