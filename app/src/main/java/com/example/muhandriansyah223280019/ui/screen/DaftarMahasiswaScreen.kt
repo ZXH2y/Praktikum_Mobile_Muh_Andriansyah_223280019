@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -65,10 +64,12 @@ fun DaftarMahasiswaScreen() {
                 if (response.status) {
                     mahasiswa = response.data
                 } else {
-                    errorMessage = "Gagal memuat data mahasiswa nyocot"
+                    mahasiswa = emptyList()
+                    errorMessage = "Gagal memuat data mahasiswa"
                 }
             } catch (e: Exception) {
-                errorMessage = "Gagal mengambil data nyocot ${e.localizedMessage}"
+                mahasiswa = emptyList()
+                errorMessage = "Gagal terhubung ke server: ${e.localizedMessage ?: "unknown error"}"
             } finally {
                 isLoading = false
             }
@@ -110,7 +111,7 @@ fun DaftarMahasiswaScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Registrasi",
+                    text = "Daftar Mahasiswa",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -118,7 +119,7 @@ fun DaftarMahasiswaScreen() {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Tai",
+                    text = "Data mahasiswa yang sudah terdaftar",
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Light,
                         letterSpacing = 0.5.sp,
@@ -130,36 +131,63 @@ fun DaftarMahasiswaScreen() {
 
         if (isLoading && mahasiswa.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 216.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
                 CircularProgressIndicator()
             }
         } else if (errorMessage != null && mahasiswa.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 216.dp, start = 24.dp, end = 24.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = errorMessage!!,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    Button(onClick = { getDataMhs() }) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { getDataMhs() },
+                        enabled = !isLoading
+                    ) {
                         Icon(
                             Icons.Default.Refresh,
                             contentDescription = null
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Coba lagi")
                     }
                 }
             }
+        } else if (mahasiswa.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 216.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Text(
+                    text = "Belum ada data mahasiswa",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 216.dp,
+                    bottom = 16.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(mahasiswa) { mhs -> MahasiswaItem(mhs) }
@@ -198,10 +226,12 @@ fun MahasiswaItem(mhsteknik: MahasiswaResponse) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                val inisial = mhsteknik.nama.split("")
+                val inisial = mhsteknik.nama
+                    .split(" ")
                     .filter { it.isNotBlank() }
-                    .take(n = 2)
-                    .joinToString(separator = "") { it.first().uppercase() }
+                    .take(2)
+                    .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                    .joinToString(separator = "")
                 Text(
                     text = inisial,
                     style = MaterialTheme.typography.headlineSmall.copy(
@@ -230,6 +260,14 @@ fun MahasiswaItem(mhsteknik: MahasiswaResponse) {
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
                     )
+                )
+                Text(
+                    text = "${mhsteknik.kelas} • ${mhsteknik.prodi}",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
